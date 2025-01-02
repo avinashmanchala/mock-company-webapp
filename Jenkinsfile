@@ -1,47 +1,16 @@
 pipeline {
+    // See documentation: https://www.jenkins.io/doc/book/pipeline/syntax/#stages
     agent any
-
     stages {
-        stage('Checkout') {
+        stage("Build") {
             steps {
-                checkout scm
+                sh "./gradlew assemble"
             }
         }
-
-        stage('Frontend Build') {
+        stage("Test") {
             steps {
-                sh '''
-                # Use a specific Node.js version
-                nvm install 18
-                nvm use 18
-
-                # Navigate to the frontend and build it
-                cd client-app
-                yarn install
-                yarn build
-                '''
+                sh "./gradlew test"
             }
-        }
-
-        stage('Backend Build') {
-            steps {
-                sh './gradlew assemble'
-            }
-        }
-
-        stage('Test') {
-            steps {
-                sh './gradlew test'
-            }
-        }
-    }
-
-    post {
-        always {
-            junit '**/build/test-results/test/*.xml'
-        }
-        failure {
-            echo 'Build or tests failed. Please review the logs.'
         }
     }
 }
