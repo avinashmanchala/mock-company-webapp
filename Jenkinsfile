@@ -4,21 +4,33 @@ pipeline {
     stages {
         stage('Checkout') {
             steps {
-                // Pull the latest code from the repository
                 checkout scm
             }
         }
 
-        stage('Build') {
+        stage('Frontend Build') {
             steps {
-                // Build the application
+                sh '''
+                # Use a specific Node.js version
+                nvm install 18
+                nvm use 18
+
+                # Navigate to the frontend and build it
+                cd client-app
+                yarn install
+                yarn build
+                '''
+            }
+        }
+
+        stage('Backend Build') {
+            steps {
                 sh './gradlew assemble'
             }
         }
 
         stage('Test') {
             steps {
-                // Run tests
                 sh './gradlew test'
             }
         }
@@ -26,9 +38,7 @@ pipeline {
 
     post {
         always {
-            // Archive test results and notify
             junit '**/build/test-results/test/*.xml'
-            echo 'Build and test stages completed.'
         }
         failure {
             echo 'Build or tests failed. Please review the logs.'
